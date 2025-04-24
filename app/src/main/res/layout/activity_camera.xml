@@ -22,4 +22,13 @@
         android:textSize="18sp"
         android:layout_marginTop="24dp"/>
 
+    <!-- Nuevo TextView para mostrar salida multiclase -->
+    <TextView
+        android:id="@+id/tvResultMulti"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="16sp"
+        android:layout_marginTop="12dp"/>
+
 </LinearLayout>

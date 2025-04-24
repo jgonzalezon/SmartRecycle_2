@@ -3,7 +3,6 @@ package com.example.myapplication_2
 import android.Manifest
 import android.content.ContentValues
 import android.content.pm.PackageManager
-import android.content.res.AssetFileDescriptor
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.os.Bundle
@@ -17,51 +16,96 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import org.tensorflow.lite.Interpreter
-import java.io.BufferedReader
-import java.io.FileInputStream
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
-
-
-
 
 class CamaraActivity : AppCompatActivity() {
 
-    private lateinit var tflite: Interpreter
-    private lateinit var labels: List<String>
+    private lateinit var tfliteBinary: Interpreter
+    private lateinit var tfliteMulti: Interpreter
+
     companion object {
-        private const val MODEL_FILENAME = "waste_model_V3.tflite"
-        private const val LABELS_FILENAME = "labels.txt"
-        private const val IMAGE_SIZE = 224
-        private const val IMAGE_MEAN = 0.485f
-        private const val IMAGE_STD = 0.229f
+        private const val MODEL_BINARY = "waste_model_V3.tflite"
+        private const val MODEL_MULTI  = "waste_model_V3_multi.tflite"
+        private const val IMAGE_SIZE   = 224
+
+        // Normalización ImageNet
+        private val IMAGE_MEAN = floatArrayOf(0.485f, 0.456f, 0.406f)
+        private val IMAGE_STD  = floatArrayOf(0.229f, 0.224f, 0.225f)
+
+        private const val THRESHOLD = 0.5f
+        private const val POSITIVE_LABEL = "Reciclable"
+        private const val NEGATIVE_LABEL = "Orgánica"
+
+        private val MULTI_LABELS = listOf(
+            "Basura general", "Carton", "Aluminio", "Organica", "Papel",
+            "Plastico", "Vidrio", "Vegetacion", "Textil"
+        )
     }
 
     private lateinit var tvResult: TextView
+    private lateinit var tvResultMulti: TextView
 
-    // 1) launcher para tomar foto
-    private val takePhotoLauncher =
-        registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-            if (bitmap != null) {
-                // 1) Guardar en galería
-                guardarEnGaleria(bitmap)
-                // 2) Clasificarla
-                val probs = classify(bitmap)
-                // 3) Mostrar resultados
-                tvResult.text = buildString {
-                    labels.forEachIndexed { i, lbl ->
+    private val takePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            guardarEnGaleria(bitmap)
+
+            // 1) inferencia binaria
+            val probPos = classifyBinary(bitmap)
+            val isPos = probPos >= THRESHOLD
+            val label = if (isPos) POSITIVE_LABEL else NEGATIVE_LABEL
+            val pct = "%.1f".format(
+                if (isPos) probPos * 100 else (1f - probPos) * 100
+            )
+            tvResult.text = "$label: $pct%"
+
+            // 2) si reciclable, inferencia multiclase
+            if (isPos) {
+                val probs = classifyMulti(bitmap)
+                // construir texto multilinea con etiquetas y prob
+                tvResultMulti.text = buildString {
+                    MULTI_LABELS.forEachIndexed { i, lbl ->
                         append("$lbl: ${"%.1f".format(probs[i] * 100)}%\n")
                     }
                 }
             } else {
-                Toast.makeText(this, "No se obtuvo ninguna foto", Toast.LENGTH_SHORT).show()
+                tvResultMulti.text = ""
+            }
+        } else {
+            Toast.makeText(this, "No se obtuvo ninguna foto", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_camera)
+
+        tvResult = findViewById(R.id.tvResult)
+        tvResultMulti = findViewById(R.id.tvResultMulti)
+        val btnTakePhoto = findViewById<Button>(R.id.btnTakePhoto)
+
+        // Carga ambos modelos
+        tfliteBinary = Interpreter(loadModelFile(MODEL_BINARY))
+        tfliteMulti  = Interpreter(loadModelFile(MODEL_MULTI))
+
+        btnTakePhoto.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(Manifest.permission.CAMERA), 123
+                )
+            } else {
+                takePhotoLauncher.launch()
             }
         }
-    // Carga el .tflite desde assets en un ByteBuffer
+    }
+
     private fun loadModelFile(name: String): ByteBuffer {
         assets.openFd(name).use { afd ->
             val input = afd.createInputStream()
@@ -73,128 +117,75 @@ class CamaraActivity : AppCompatActivity() {
             return buffer
         }
     }
-    // Carga labels.txt (una etiqueta por línea)
-    private fun loadLabels(name: String): List<String> {
-        val out = mutableListOf<String>()
-        assets.open(name).bufferedReader().useLines { lines ->
-            lines.forEach { line ->
-                if (line.isNotBlank()) out += line.trim()
-            }
-        }
-        return out
-    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
-
-        tvResult = findViewById(R.id.tvResult)
-        val btnTakePhoto = findViewById<Button>(R.id.btnTakePhoto)
-
-        // 1) Carga modelo y labels
-        tflite = Interpreter(loadModelFile(MODEL_FILENAME))
-        labels = loadLabels(LABELS_FILENAME)
-
-        btnTakePhoto.setOnClickListener {
-            // Pedir permiso si no lo tenemos
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.CAMERA),
-                    123
-                )
-            } else {
-                takePhotoLauncher.launch()
-            }
-        }
-    }
-
-    /** Rota 90° si el thumbnail sale en orientación incorrecta (opcional). */
-    private fun rotateBitmapIfNeeded(bm: Bitmap): Bitmap {
-        val matrix = Matrix().apply { postRotate(90f) }
-        return Bitmap.createBitmap(bm, 0, 0, bm.width, bm.height, matrix, true)
-    }
-
-    /** Clasifica un Bitmap y devuelve la etiqueta más probable. */
-    private fun classify(bitmap: Bitmap): FloatArray {
-        // 1) redimensiona
+    // Inferencia binaria
+    private fun classifyBinary(bitmap: Bitmap): Float {
         val img = Bitmap.createScaledBitmap(bitmap, IMAGE_SIZE, IMAGE_SIZE, true)
-        // 2) prepara ByteBuffer de entrada
-        val byteBuffer = ByteBuffer.allocateDirect(4 * IMAGE_SIZE * IMAGE_SIZE * 3)
+        val buffer = ByteBuffer.allocateDirect(4 * IMAGE_SIZE * IMAGE_SIZE * 3)
             .apply { order(ByteOrder.nativeOrder()) }
-        val intValues = IntArray(IMAGE_SIZE * IMAGE_SIZE)
-        img.getPixels(intValues, 0, IMAGE_SIZE, 0, 0, IMAGE_SIZE, IMAGE_SIZE)
-        // 3) normaliza y rellena
-        for (pixel in intValues) {
-            val r = ((pixel shr 16) and 0xFF) / 255f
-            val g = ((pixel shr 8) and 0xFF) / 255f
-            val b = (pixel and 0xFF) / 255f
-            byteBuffer.putFloat((r - IMAGE_MEAN) / IMAGE_STD)
-            byteBuffer.putFloat((g - IMAGE_MEAN) / IMAGE_STD)
-            byteBuffer.putFloat((b - IMAGE_MEAN) / IMAGE_STD)
+        val pixels = IntArray(IMAGE_SIZE * IMAGE_SIZE)
+        img.getPixels(pixels, 0, IMAGE_SIZE, 0, 0, IMAGE_SIZE, IMAGE_SIZE)
+        for (p in pixels) {
+            val r = ((p shr 16) and 0xFF) / 255f
+            val g = ((p shr  8) and 0xFF) / 255f
+            val b = ( p         and 0xFF) / 255f
+            buffer.putFloat((r - IMAGE_MEAN[0]) / IMAGE_STD[0])
+            buffer.putFloat((g - IMAGE_MEAN[1]) / IMAGE_STD[1])
+            buffer.putFloat((b - IMAGE_MEAN[2]) / IMAGE_STD[2])
         }
-        // 4) resultado (1×N)
-        val output = Array(1) { FloatArray(labels.size) }
-        // 5) inferencia
-        tflite.run(byteBuffer, output)
-        // 6) devolvemos el array de probabilidades
+        buffer.rewind()
+        val output = Array(1) { FloatArray(1) }
+        tfliteBinary.run(buffer, output)
+        return output[0][0]
+    }
+
+    // Inferencia multiclase (9 clases)
+    private fun classifyMulti(bitmap: Bitmap): FloatArray {
+        val img = Bitmap.createScaledBitmap(bitmap, IMAGE_SIZE, IMAGE_SIZE, true)
+        val buffer = ByteBuffer.allocateDirect(4 * IMAGE_SIZE * IMAGE_SIZE * 3)
+            .apply { order(ByteOrder.nativeOrder()) }
+        val pixels = IntArray(IMAGE_SIZE * IMAGE_SIZE)
+        img.getPixels(pixels, 0, IMAGE_SIZE, 0, 0, IMAGE_SIZE, IMAGE_SIZE)
+        for (p in pixels) {
+            val r = ((p shr 16) and 0xFF) / 255f
+            val g = ((p shr  8) and 0xFF) / 255f
+            val b = ( p         and 0xFF) / 255f
+            buffer.putFloat((r - IMAGE_MEAN[0]) / IMAGE_STD[0])
+            buffer.putFloat((g - IMAGE_MEAN[1]) / IMAGE_STD[1])
+            buffer.putFloat((b - IMAGE_MEAN[2]) / IMAGE_STD[2])
+        }
+        buffer.rewind()
+        val output = Array(1) { FloatArray(MULTI_LABELS.size) }
+        tfliteMulti.run(buffer, output)
         return output[0]
     }
 
-
-// Guarda el bitmap en la galería
     private fun guardarEnGaleria(bitmap: Bitmap) {
         val filename = "MiFoto_${System.currentTimeMillis()}.jpg"
-
-        // 1) Preparamos los metadatos
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, filename)
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            // Para Android Q+ (Scoped Storage): carpeta DCIM/MyApp
             put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/MyApp")
-            // marcamos pending hasta que terminemos de escribir
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 put(MediaStore.Images.Media.IS_PENDING, 1)
             }
         }
-
-        // 2) Insertamos y obtenemos URI
         val uri = contentResolver.insert(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            values
-        )
-
-        if (uri == null) {
-            Toast.makeText(this, "No se pudo crear la entrada en MediaStore", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // 3) Escribimos el bitmap sobre el OutputStream
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+        ) ?: run { Toast.makeText(this, "No se pudo crear la entrada en MediaStore", Toast.LENGTH_SHORT).show(); return }
         try {
             contentResolver.openOutputStream(uri)?.use { out ->
-                if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)) {
-                    throw Exception("compress() devolvió false")
-                }
+                if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)) throw Exception("compress() devolvió false")
             }
         } catch (e: Exception) {
-            // si algo falla, borramos la entrada que creamos
             contentResolver.delete(uri, null, null)
             Toast.makeText(this, "Error al escribir la imagen: ${e.message}", Toast.LENGTH_LONG).show()
             return
         }
-
-        // 4) Liberamos el flag pending para que aparezca en la galería
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            values.clear()
-            values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            values.clear(); values.put(MediaStore.Images.Media.IS_PENDING, 0)
             contentResolver.update(uri, values, null, null)
         }
-
         Toast.makeText(this, "Foto guardada en galería", Toast.LENGTH_SHORT).show()
     }
-
 }
