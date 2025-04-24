@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <!-- Imagen para el logo de la aplicación -->
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:layout_marginBottom="32dp"
+        android:contentDescription="@string/content_desc_logo"
+        android:src="@drawable/bn_round" />
+
+    <!-- Botón para ejecutar la aplicación -->
+    <Button
+        android:id="@+id/btnEjecutar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_ejecutar"
+        android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:id="@+id/btnTareas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ver_lista_de_tareas"
+        android:layout_marginBottom="20dp"/>
+
+
+    <!-- Botón de ayuda -->
+    <Button
+        android:id="@+id/btnAyuda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_ayuda"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Botón para salir de la aplicación -->
+    <Button
+        android:id="@+id/btnSalir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_salir"/>
+
+</LinearLayout>
