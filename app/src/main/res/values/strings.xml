@@ -1,12 +1,11 @@
 <resources>
-    <string name="app_name">My Application_2</string>
+    <string name="app_name">Smart Recycle</string>
     <string name="content_desc_logo">Logo de la aplicación</string>
-    <string name="btn_ejecutar">Ejecutar la Aplicación</string>
+    <string name="btn_ejecutar">Hacer inferencia</string>
     <string name="btn_ayuda">Ayuda</string>
     <string name="btn_salir">Salir</string>
     <string name="title_activity_camara">CamaraActivity</string>
     <string name="anadir_tarea">Añadir tarea</string>
     <string name="ver_lista_de_tareas">Ver lista de tareas</string>
     <string name="nombre_de_la_tarea">Nombre de la tarea</string>
-    <!-- etc. -->
 </resources>

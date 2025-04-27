@@ -24,7 +24,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="D:\Temp\ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\jgonz\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -67,7 +67,8 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="imagePath" value="D:\Temp\ic_android_black_24dp.xml" />
+                                                <entry key="color" value="000000" />
+                                                <entry key="imagePath" value="C:\Users\jgonz\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -79,7 +80,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="D:\Users\Javier\AndroidStudioProjects\MyApplication_2\app\src\main\res\drawable\bn_round.png" />
+                                                <entry key="imagePath" value="C:\Users\jgonz\Desktop\SM.png" />
+                                                <entry key="scalingPercent" value="79" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -123,7 +125,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="D:\Temp\ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\jgonz\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -167,7 +169,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="D:\Temp\ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\jgonz\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -231,7 +233,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="imagePath" value="D:\Temp\ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\jgonz\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>

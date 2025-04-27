@@ -1,0 +1,9 @@
+Basura general
+Carton
+Aluminio
+Organica
+Papel
+Plastico
+Vidrio
+Vegetacion
+Textil

@@ -15,7 +15,7 @@
         android:layout_height="200dp"
         android:layout_marginBottom="32dp"
         android:contentDescription="@string/content_desc_logo"
-        android:src="@drawable/bn_round" />
+        android:src="@drawable/mascota" />
 
     <!-- Botón para ejecutar la aplicación -->
     <Button
@@ -24,16 +24,16 @@
         android:layout_height="wrap_content"
         android:text="@string/btn_ejecutar"
         android:layout_marginBottom="20dp"/>
+    <!--
+        <Button
+            android:id="@+id/btnTareas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ver_lista_de_tareas"
+            android:layout_marginBottom="20dp"/>
+      -->
 
-    <Button
-        android:id="@+id/btnTareas"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/ver_lista_de_tareas"
-        android:layout_marginBottom="20dp"/>
-
-
-    <!-- Botón de ayuda -->
+        <!-- Botón de ayuda -->
     <Button
         android:id="@+id/btnAyuda"
         android:layout_width="wrap_content"

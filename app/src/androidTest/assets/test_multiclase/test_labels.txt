@@ -1,0 +1,180 @@
+0_Miscellaneous Trash_250.jpg,0
+0_Miscellaneous Trash_425.jpg,0
+0_Miscellaneous Trash_459.jpg,0
+0_Miscellaneous Trash_162.jpg,0
+0_trash47.jpg,0
+0_Miscellaneous Trash_37.jpg,0
+0_Miscellaneous Trash_183.jpg,0
+0_Miscellaneous Trash_143.jpg,0
+0_trash74.jpg,0
+0_Miscellaneous Trash_66.jpg,0
+0_Miscellaneous Trash_461.jpg,0
+0_Miscellaneous Trash_371.jpg,0
+0_Miscellaneous Trash_256.jpg,0
+0_trash90.jpg,0
+0_Miscellaneous Trash_444.jpg,0
+0_trash122.jpg,0
+0_Miscellaneous Trash_65.jpg,0
+0_Miscellaneous Trash_70.jpg,0
+0_Miscellaneous Trash_23.jpg,0
+0_Miscellaneous Trash_284.jpg,0
+1_cardboard122.jpg,1
+1_cardboard123.jpg,1
+1_Cardboard_98.jpg,1
+1_Cardboard_14.jpg,1
+1_Cardboard_410.jpg,1
+1_cardboard372.jpg,1
+1_cardboard57.jpg,1
+1_Cardboard_44.jpg,1
+1_Cardboard_126.jpg,1
+1_Cardboard_400.jpg,1
+1_cardboard239.jpg,1
+1_Cardboard_66.jpg,1
+1_Cardboard_401.jpg,1
+1_cardboard59.jpg,1
+1_Cardboard_258.jpg,1
+1_Cardboard_266.jpg,1
+1_cardboard235.jpg,1
+1_Cardboard_257.jpg,1
+1_Cardboard_300.jpg,1
+1_Cardboard_461.jpg,1
+2_metal15.jpg,2
+2_Metal_746.jpg,2
+2_Metal_175.jpg,2
+2_Metal_780.jpg,2
+2_metal112.jpg,2
+2_metal174.jpg,2
+2_Metal_644.jpg,2
+2_Metal_574.jpg,2
+2_metal42.jpg,2
+2_Metal_325.jpg,2
+2_Metal_257.jpg,2
+2_Metal_66.jpg,2
+2_Metal_685.jpg,2
+2_metal295.jpg,2
+2_Metal_359.jpg,2
+2_metal104.jpg,2
+2_Metal_389.jpg,2
+2_Metal_699.jpg,2
+2_metal409.jpg,2
+2_Metal_445.jpg,2
+3_Food Organics_96.jpg,3
+3_Food Organics_187.jpg,3
+3_Food Organics_114.jpg,3
+3_Food Organics_211.jpg,3
+3_Food Organics_87.jpg,3
+3_Food Organics_150.jpg,3
+3_Food Organics_401.jpg,3
+3_Food Organics_357.jpg,3
+3_Food Organics_329.jpg,3
+3_Food Organics_338.jpg,3
+3_Food Organics_275.jpg,3
+3_Food Organics_123.jpg,3
+3_Food Organics_372.jpg,3
+3_Food Organics_64.jpg,3
+3_Food Organics_12.jpg,3
+3_Food Organics_185.jpg,3
+3_Food Organics_119.jpg,3
+3_Food Organics_282.jpg,3
+3_Food Organics_165.jpg,3
+3_Food Organics_68.jpg,3
+4_paper543.jpg,4
+4_Paper_383.jpg,4
+4_paper222.jpg,4
+4_paper476.jpg,4
+4_paper397.jpg,4
+4_Paper_99.jpg,4
+4_paper95.jpg,4
+4_paper122.jpg,4
+4_paper489.jpg,4
+4_paper394.jpg,4
+4_paper562.jpg,4
+4_Paper_307.jpg,4
+4_Paper_282.jpg,4
+4_paper471.jpg,4
+4_Paper_417.jpg,4
+4_paper396.jpg,4
+4_paper202.jpg,4
+4_paper252.jpg,4
+4_paper508.jpg,4
+4_paper480.jpg,4
+5_plastic360.jpg,5
+5_plastic248.jpg,5
+5_plastic312.jpg,5
+5_plastic57.jpg,5
+5_Plastic_522.jpg,5
+5_Plastic_378.jpg,5
+5_Plastic_693.jpg,5
+5_Plastic_462.jpg,5
+5_Plastic_876.jpg,5
+5_Plastic_92.jpg,5
+5_plastic210.jpg,5
+5_Plastic_305.jpg,5
+5_plastic364.jpg,5
+5_plastic272.jpg,5
+5_Plastic_877.jpg,5
+5_plastic417.jpg,5
+5_plastic469.jpg,5
+5_Plastic_228.jpg,5
+5_plastic177.jpg,5
+5_Plastic_548.jpg,5
+6_glass429.jpg,6
+6_Glass_168.jpg,6
+6_glass95.jpg,6
+6_Glass_400.jpg,6
+6_glass266.jpg,6
+6_Glass_397.jpg,6
+6_Glass_208.jpg,6
+6_glass488.jpg,6
+6_glass2.jpg,6
+6_Glass_1.jpg,6
+6_Glass_267.jpg,6
+6_glass423.jpg,6
+6_glass210.jpg,6
+6_glass149.jpg,6
+6_Glass_325.jpg,6
+6_glass111.jpg,6
+6_glass325.jpg,6
+6_Glass_307.jpg,6
+6_Glass_363.jpg,6
+6_Glass_231.jpg,6
+7_Vegetation_420.jpg,7
+7_Vegetation_227.jpg,7
+7_Vegetation_108.jpg,7
+7_Vegetation_281.jpg,7
+7_Vegetation_210.jpg,7
+7_Vegetation_250.jpg,7
+7_Vegetation_47.jpg,7
+7_Vegetation_411.jpg,7
+7_Vegetation_366.jpg,7
+7_Vegetation_4.jpg,7
+7_Vegetation_10.jpg,7
+7_Vegetation_217.jpg,7
+7_Vegetation_68.jpg,7
+7_Vegetation_274.jpg,7
+7_Vegetation_187.jpg,7
+7_Vegetation_152.jpg,7
+7_Vegetation_277.jpg,7
+7_Vegetation_365.jpg,7
+7_Vegetation_126.jpg,7
+7_Vegetation_229.jpg,7
+8_Textile Trash_94.jpg,8
+8_Textile Trash_62.jpg,8
+8_Textile Trash_183.jpg,8
+8_Textile Trash_63.jpg,8
+8_Textile Trash_213.jpg,8
+8_Textile Trash_226.jpg,8
+8_Textile Trash_108.jpg,8
+8_Textile Trash_159.jpg,8
+8_Textile Trash_53.jpg,8
+8_Textile Trash_35.jpg,8
+8_Textile Trash_141.jpg,8
+8_Textile Trash_72.jpg,8
+8_Textile Trash_207.jpg,8
+8_Textile Trash_239.jpg,8
+8_Textile Trash_66.jpg,8
+8_Textile Trash_166.jpg,8
+8_Textile Trash_114.jpg,8
+8_Textile Trash_13.jpg,8
+8_Textile Trash_43.jpg,8
+8_Textile Trash_282.jpg,8
