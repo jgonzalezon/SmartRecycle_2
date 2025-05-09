@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.myapplication_2"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -25,6 +25,7 @@ android {
         }
     }
 
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -34,7 +35,9 @@ android {
             )
         }
     }
-
+    buildFeatures {
+        viewBinding = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -46,6 +49,7 @@ android {
     buildFeatures {
         compose = true
     }
+
 }
 
 dependencies {
@@ -62,7 +66,13 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
-    implementation (libs.tensorflow.lite)
+    //implementation ("org.tensorflow:tensorflow-lite:2.15.0")
+    implementation ("org.tensorflow:tensorflow-lite-select-tf-ops:2.15.0")
+
+    implementation ("androidx.fragment:fragment-ktx:1.8.6")
+    implementation ("androidx.activity:activity-ktx:1.10.1")
+    implementation("org.tensorflow:tensorflow-lite-support:0.5.0")
+
 
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
@@ -77,4 +87,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+configurations.all {
+    //exclude(group = "com.google.ai.edge.litert")
 }

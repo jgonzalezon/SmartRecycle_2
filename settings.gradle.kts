@@ -16,9 +16,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // repositorio de nightlies de TensorFlow
+        maven { url = uri("https://storage.googleapis.com/tensorflow/android-repo/nightly") }
     }
 }
 
-rootProject.name = "My Application_2"
+rootProject.name = "SmartRecycle"
 include(":app")
  

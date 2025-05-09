@@ -4,34 +4,42 @@
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Vista previa de la cámara -->
+    <!-- 1) Vista previa de la cámara, ocupa todo el espacio disponible -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        />
+        android:layout_weight="1" />
 
-    <!-- Resultado clasificación binaria -->
+    <!-- 2) Resultado principal: la etiqueta con mayor probabilidad -->
     <TextView
-        android:id="@+id/tvResult"
-        android:layout_width="wrap_content"
+        android:id="@+id/tvTop"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Resultado: --"
-        android:textSize="18sp"
-        android:layout_marginTop="8dp" />
+        android:text="Clasificación: —"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:gravity="center" />
 
-    <!-- Resultado clasificación multiclase -->
-    <TextView
-        android:id="@+id/tvResultMulti"
-        android:layout_width="wrap_content"
+    <!-- 3) Listado completo de probabilidades (scrollable) -->
+    <ScrollView
+        android:id="@+id/scroll_probs"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="16sp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:fillViewport="true">
+
+        <TextView
+            android:id="@+id/tvAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp"
+            android:text="—" />
+    </ScrollView>
 
 </LinearLayout>

@@ -1,11 +1,20 @@
 <resources>
     <string name="app_name">Smart Recycle</string>
     <string name="content_desc_logo">Logo de la aplicación</string>
-    <string name="btn_ejecutar">Hacer inferencia</string>
+    <string name="btn_ejecutar">Camara</string>
     <string name="btn_ayuda">Ayuda</string>
     <string name="btn_salir">Salir</string>
     <string name="title_activity_camara">CamaraActivity</string>
     <string name="anadir_tarea">Añadir tarea</string>
     <string name="ver_lista_de_tareas">Ver lista de tareas</string>
     <string name="nombre_de_la_tarea">Nombre de la tarea</string>
+    <string name="Entrenamiento">Entrenar</string>
+    <string name="thumbnail">Mimiatura</string>
+    <string name="btn_save">Guardar</string>
+    <string name="menu_ayuda">Ayuda</string>
+    <string name="menu_fabrica">Fabrica</string>
+    <string name="menu">Menú</string>
+    <string name="help_title">Ayuda</string>
+    <string name="help_message">• Al abrir la cámara y pulsar la pantalla, la foto se guarda en tu galería y se clasifica automáticamente.\n\n• En “Entrenar” puedes elegir varias fotos de tu galería. Cada imagen se clasificará según la basura que hayas seleccionado.\n\n• Si una clasificación no es correcta, puedes escoger la etiqueta adecuada antes de entrenar, y la app aprenderá a clasificar mejor en tu entorno.</string>
+    <string name="ok">OK</string>
 </resources>
