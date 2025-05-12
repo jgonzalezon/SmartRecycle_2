@@ -44,7 +44,7 @@ btnAyuda.setOnClickListener {
     // Mostrar un diálogo de ayuda
     AlertDialog.Builder(this)
         .setTitle("Ayuda")
-        .setMessage("Esta es la ayuda de la aplicación.\n\nAquí puedes incluir instrucciones o información relevante.")
+        .setMessage("Esta es la ayuda de la aplicación.\n\nAquí se añadirá información relevante en el futuro.")
         .setPositiveButton("OK", null)
         .show()
 }
