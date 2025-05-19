@@ -2,8 +2,6 @@ package com.example.myapplication_2
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -12,23 +10,28 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.Delegate
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import android.widget.PopupMenu
-import com.example.myapplication_2.AppConfig
 
 class MainActivity : AppCompatActivity() {
 
 
-    private val MODEL_FILE      = "continual_trainable.tflite"
+    private val MODEL_FILE      = "continual_trainable_B0.tflite"
     // Flag que indica si hay cambios de entrenamiento sin guardar
     private var isDirty = false
     private lateinit var tflite: Interpreter
     private lateinit var trainingLauncher: ActivityResultLauncher<Intent>
 
-
+    private fun runSignatureReset(
+        inputs: Map<String, Any>,
+        outputs: Map<String, Any>,
+        signatureKey: String
+    ) {
+        tflite.runSignature(inputs, outputs, signatureKey)
+        tflite.allocateTensors()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        // Registras el lanzador
+        // Registra el lanzador
         trainingLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -117,46 +120,38 @@ class MainActivity : AppCompatActivity() {
                 btnSave.isEnabled = false
             })
         }
-
-
-
         // Acción para el botón "Salir"
         btnSalir.setOnClickListener {
             handleExit()
         }
     }
 
-
-
-
     /** Ejecuta la firma “save” y vuelca el checkpoint al path elegido */
     fun saveCheckpoint(path: String) {
-        // Entrada: 'path' → array de String con la ruta destino
-        val inputs  = mapOf("path" to arrayOf(path))
-        // Salida: 'checkpoint_path' → array donde se devolverá la ruta escrita
-        // 2) Outputs como MutableMap<String, Any>
+        // Preparamos inputs/outputs
+        val inputs = mapOf("path" to arrayOf(path))
         val outputs: MutableMap<String, Any> = mutableMapOf(
-            "checkpoint_path" to arrayOf("")  // inicializamos vacío
+            "checkpoint_path" to arrayOf("")  // placeholder
         )
-        // Lanza la firma "save"
-        tflite.runSignature(inputs, outputs, "save")
 
-        // Recoge la ruta confirmada
+        // Ejecutamos la firma y reseteamos el intérprete
+        runSignatureReset(inputs, outputs, "save")
+
+        // Extraemos la ruta devuelta
         @Suppress("UNCHECKED_CAST")
         val savedPath = (outputs["checkpoint_path"] as Array<String>)[0]
+
         Toast.makeText(this,
             "Checkpoint guardado en:\n$savedPath",
             Toast.LENGTH_LONG
         ).show()
     }
 
-    /** Diálogo genérico de “¿Guardar cambios?” */
     private fun showSaveDialog(onConfirm: () -> Unit) {
         AlertDialog.Builder(this)
             .setTitle("Guardar checkpoint")
             .setMessage("¿Deseas guardar los cambios entrenados?")
             .setPositiveButton("Guardar") { _, _ ->
-                // Guarda el checkpoint
                 val targetFile = File(filesDir, "model.ckpt")
                 saveCheckpoint(targetFile.absolutePath)
                 onConfirm()
@@ -205,7 +200,7 @@ class MainActivity : AppCompatActivity() {
     private fun showFactoryResetDialog() {
         AlertDialog.Builder(this)
             .setTitle("Restablecer fábrica")
-            .setMessage("¿Seguro que quieres eliminar el checkpoint y restablecer etiquetas de fábrica?")
+            .setMessage("¿Seguro que quieres eliminar el checkpoint, el buffer de replay y restablecer etiquetas de fábrica?")
             .setPositiveButton("Eliminar") { _, _ ->
                 // 1) Borrar checkpoint
                 val ckptFile = File(filesDir, "model.ckpt")
@@ -215,26 +210,40 @@ class MainActivity : AppCompatActivity() {
                 val labelsFile = File(filesDir, "labels.txt")
                 val labelsDeleted = if (labelsFile.exists()) labelsFile.delete() else false
 
-                // 3) Notificar al usuario
-                when {
+                // 3) Borrar buffer de replay local
+                val replayFile = File(filesDir, "replay_buffer_local.npz")
+                val replayDeleted = if (replayFile.exists()) replayFile.delete() else false
+
+                // 4) Notificar al usuario
+                val message = when {
+                    ckptDeleted && labelsDeleted && replayDeleted ->
+                        "Checkpoint, etiquetas y replay buffer restaurados a fábrica"
                     ckptDeleted && labelsDeleted ->
-                        Toast.makeText(this, "Checkpoint y etiquetas restaurados a fábrica", Toast.LENGTH_SHORT).show()
+                        "Checkpoint y etiquetas restaurados; replay buffer no existía"
+                    ckptDeleted && replayDeleted ->
+                        "Checkpoint y replay buffer borrados; etiquetas en fábrica"
+                    labelsDeleted && replayDeleted ->
+                        "Etiquetas y replay buffer restaurados; checkpoint no existía"
                     ckptDeleted ->
-                        Toast.makeText(this, "Checkpoint borrado; etiquetas en fábrica", Toast.LENGTH_SHORT).show()
+                        "Checkpoint borrado; etiquetas y replay buffer en fábrica"
                     labelsDeleted ->
-                        Toast.makeText(this, "Etiquetas restauradas a fábrica; no había checkpoint", Toast.LENGTH_SHORT).show()
+                        "Etiquetas restauradas a fábrica; ni checkpoint ni replay buffer previos"
+                    replayDeleted ->
+                        "Replay buffer restaurado a fábrica; checkpoint y etiquetas en fábrica"
                     else ->
-                        Toast.makeText(this, "No había checkpoint ni etiquetas personalizadas", Toast.LENGTH_SHORT).show()
+                        "No había checkpoint, etiquetas personalizadas ni replay buffer"
                 }
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
-                // 4) Reinicializar AppConfig para recargar las labels de assets
-                AppConfig.init(this@MainActivity)
+                // 5) Reinicializar AppConfig para recargar las labels de assets
+                AppConfig.init(this)
 
-                // 5) Si tenías un menú o botones dependientes de isDirty/activeClasses, recarga UI:
+                // 6) Refrescar UI si usas menús o vistas basados en activeClasses
                 invalidateOptionsMenu()
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
+
 
 }

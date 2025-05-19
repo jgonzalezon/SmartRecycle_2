@@ -3,7 +3,6 @@ package com.example.myapplication_2
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.example.myapplication_2.TrainingActivity.Companion.MODEL_FILE
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
@@ -27,14 +26,8 @@ object AppConfig {
     var activeClasses: Int = 0
         private set
     const val MaxClasses: Int = 15
-    const val IMG_SIZE: Int = 360
+    const val IMG_SIZE: Int = 224
 
-
-    /**
-     * Debe llamarse una vez (por ejemplo en Application.onCreate
-     * o en la primera Activity). Se asegura de copiar de assets
-     * a internal storage si no existía, y luego carga labels+count.
-     */
     fun init(context: Context) {
         val destFile = File(context.filesDir, LABELS_FILE)
 

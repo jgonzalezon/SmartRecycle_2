@@ -27,19 +27,13 @@ import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.min
-import androidx.core.graphics.scale
-import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.common.ops.CastOp
 import java.io.File
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.image.ops.ResizeOp.ResizeMethod
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer      // si lo utilizas
 
-/**
- * Cámara + clasificación TFLite que expone la
- * firma `infer` (salida "output") de 9 clases.
- */
+
 class CamaraActivity : AppCompatActivity() {
 
     // UI
@@ -54,8 +48,7 @@ class CamaraActivity : AppCompatActivity() {
     private var focusRect: Rect? = null
 
     companion object {
-        private const val MODEL_FILE = "continual_trainable.tflite"
-        internal var activeClasses = 9      // 9 al inicio
+        private const val MODEL_FILE = "continual_trainable_B0.tflite"
         private const val MAX_CLASSES = 15
     }
 
@@ -79,13 +72,8 @@ class CamaraActivity : AppCompatActivity() {
 
         if (ckptFile.exists()) {
             try {
-                // 3) Prepara los mapas para la firma "restore"
-                val inputs: Map<String, Any> = mapOf(
-                    "path" to arrayOf(ckptFile.absolutePath)
-                )
-                val outputs: MutableMap<String, Any> = mutableMapOf()
-
-                // 4) Ejecuta la firma
+                val inputs  = mapOf("path" to ckptFile.absolutePath)   // escalar string
+                val outputs = mutableMapOf<String, Any>()               // no devuelve tensores
                 tflite.runSignature(inputs, outputs, "restore")
                 Toast.makeText(this, "Checkpoint restaurado", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
@@ -186,31 +174,34 @@ class CamaraActivity : AppCompatActivity() {
     // ────────────────────── Inferencia ────────────────────────────
     private fun classify(bitmap: Bitmap): FloatArray {
 
-        /* ---------- 1) Pre-procesado idéntico a Python ---------- */
-        val tensor  = TensorImage.fromBitmap(bitmap)               // RGB-888
-        val input   = ImageProcessor.Builder()
-            .add(ResizeOp(AppConfig.IMG_SIZE, AppConfig.IMG_SIZE, ResizeOp.ResizeMethod.BILINEAR))
-            // (x / 127.5 − 1) ⇒ [-1,1] tal como EfficientNet espera
-            .add(NormalizeOp(127.5f, 127.5f))
+        // --- 1) Leer el tamaño que exige el modelo ---
+        val inputTensor = tflite.getInputTensor(0)
+        val shape = inputTensor.shape()
+        val h = shape[1]; val w = shape[2]
+
+        // --- 2) Pre-procesado ---
+        val tensorImg = TensorImage.fromBitmap(bitmap)          // UINT8
+        val processor = ImageProcessor.Builder()
+            .add(ResizeOp(h, w, ResizeOp.ResizeMethod.BILINEAR))
+            .add(CastOp(org.tensorflow.lite.DataType.FLOAT32))  // fuerza FP32
             .build()
-            .process(tensor)                                       // (1,260,260,3) FP32
+        val inputBuffer = processor.process(tensorImg).buffer
 
-        /* ---------- 2) Inferencia con la Signature API ---------- */
-        val outputs = hashMapOf<String, Any>(
-            "output" to Array(1) { FloatArray(AppConfig.MaxClasses) }
+        // --- 3) Inferencia ---
+        val output = Array(1) { FloatArray(MAX_CLASSES) }
+        tflite.runSignature(
+            mapOf("x" to inputBuffer),
+            mapOf("output" to output),
+            "infer"
         )
-        tflite.runSignature(mapOf("x" to input.buffer), outputs, "infer")
 
-        @Suppress("UNCHECKED_CAST")
-        val logits = (outputs["output"] as Array<FloatArray>)[0]
-
-        /* ---------- 3) Devolver sólo las clases activas ---------- */
-        return logits.copyOfRange(0, AppConfig.activeClasses)
+        // --- 4) Recorte al nº de clases activas ---
+        return output[0].copyOfRange(0, AppConfig.activeClasses)
     }
 
 
 
-    // ─────────────── Guardar en galería (sin cambios) ──────────────
+    // ─────────────── Guardar en galería  ──────────────
     private fun guardarEnGaleria(bmp: Bitmap) {
         val filename = "MiFoto_${System.currentTimeMillis()}.jpg"
         val values = ContentValues().apply {

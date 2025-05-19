@@ -13,6 +13,8 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication_2.databinding.RowImageBinding
+import android.view.MotionEvent
+
 
 data class ImageItem(
     val uri: Uri,
@@ -29,6 +31,9 @@ class ImageAdapter(
 
     inner class VH(val binding: RowImageBinding) : RecyclerView.ViewHolder(binding.root)
 
+
+
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val binding = RowImageBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -43,72 +48,79 @@ class ImageAdapter(
         with(holder.binding) {
             imgThumb.setImageBitmap(item.bitmap)
 
-            // 1) Lista dinámica: etiquetas + “Añadir clase”
-            val baseLabels = AppConfig.labels.toMutableList()
-            baseLabels.add("Añadir clase")
-
-            // 2) Adapter
+            // 1) Base de etiquetas + “Añadir clase”
+            val baseLabels = AppConfig.labels.toMutableList().apply { add("Añadir clase") }
             val spinnerAdapter = ArrayAdapter(
                 root.context,
                 android.R.layout.simple_spinner_item,
                 baseLabels
-            ).also {
-                it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
+            ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
             spinner.adapter = spinnerAdapter
 
-            // 3) Selección sin disparar evento
-            spinner.setSelection(item.labelIdx, false)
+            // 2) Selección inicial
+            spinner.setSelection(item.labelIdx)
 
-            // 4) Listener
-            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            // 3) Listener de cambio (lo definimos una sola vez y lo reutilizamos)
+            val selectionListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>, view: View?, idx: Int, id: Long) {
-                    val ctx = root.context
-
-                    // Usuario pinchó “Añadir clase” (último elemento)
-                    if (idx == baseLabels.lastIndex) {
-                        if (AppConfig.labels.size >= 15) {
-                            // Ya en límite: informar que restaure fábrica
-                            AlertDialog.Builder(ctx)
+                    val addPos = parent.adapter.count - 1
+                    if (idx == addPos) {
+                        // **Aquí** abrimos el diálogo
+                        if (AppConfig.labels.size >= AppConfig.MaxClasses) {
+                            AlertDialog.Builder(root.context)
                                 .setTitle("Límite alcanzado")
-                                .setMessage("Ya tienes 15 clases. Para añadir más etiquetas debes restablecer la configuración de fábrica.")
+                                .setMessage("Ya tienes ${AppConfig.MaxClasses} clases. Restablece fábrica para más.")
                                 .setPositiveButton("OK", null)
                                 .show()
                         } else {
-                            // Todavía caben: abrir diálogo para nombre
-                            showAddClassDialog(ctx) { newLabel ->
-                                val newLabels = AppConfig.labels.toMutableList().apply { add(newLabel) }
-                                AppConfig.saveLabels(ctx, newLabels)
-
-                                // Rebuild spinner adapter
+                            showAddClassDialog(root.context) { newLabel ->
+                                // 1) Guardar
+                                val newLabels = AppConfig.labels + newLabel
+                                AppConfig.saveLabels(root.context, newLabels)
+                                // 2) Reconstruir spinner
                                 val updated = newLabels.toMutableList().apply { add("Añadir clase") }
                                 val newAdapter = ArrayAdapter(
-                                    ctx,
+                                    root.context,
                                     android.R.layout.simple_spinner_item,
                                     updated
-                                ).also {
-                                    it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                                }
+                                ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
                                 spinner.adapter = newAdapter
-
-                                // Seleccionar la nueva
+                                // 3) Seleccionar la recién creada
                                 val newIdx = newLabels.lastIndex
-                                spinner.setSelection(newIdx, false)
-
-                                // Actualizar item y callback
+                                spinner.setSelection(newIdx)
+                                // 4) Actualizar modelo y callback
                                 item.labelIdx = newIdx
                                 onLabelChange(position, newIdx)
                             }
                         }
-                    }
-                    // Cambio normal de etiqueta existente
-                    else if (item.labelIdx != idx) {
+                    } else if (item.labelIdx != idx) {
+                        // Cambio normal
                         item.labelIdx = idx
                         onLabelChange(position, idx)
                     }
                 }
-
                 override fun onNothingSelected(parent: AdapterView<*>) = Unit
+            }
+
+            // 4) Asignamos el listener
+            spinner.onItemSelectedListener = selectionListener
+
+            // 5) OnTouch para refrescar etiquetas justo antes de abrir
+            spinner.setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    val dynamic = AppConfig.labels.toMutableList().apply { add("Añadir clase") }
+                    val refreshed = ArrayAdapter(
+                        root.context,
+                        android.R.layout.simple_spinner_item,
+                        dynamic
+                    ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+                    spinner.adapter = refreshed
+                    // Necesitamos re-asignar el mismo listener tras cambiar adapter:
+                    spinner.onItemSelectedListener = selectionListener
+                    // Y volvemos a fijar la selección actual:
+                    spinner.setSelection(item.labelIdx)
+                }
+                false
             }
         }
     }
@@ -128,15 +140,27 @@ class ImageAdapter(
         onNewLabel: (String) -> Unit
     ) {
         val edit = EditText(context).apply { hint = "Nombre de la nueva clase" }
-        AlertDialog.Builder(context)
+        // Creamos el AlertDialog en vez de usar .show() directo
+        val dialog = AlertDialog.Builder(context)
             .setTitle("Añadir nueva clase")
             .setView(edit)
-            .setPositiveButton("Añadir") { _, _ ->
-                val text = edit.text.toString().trim()
-                if (text.isNotEmpty()) onNewLabel(text)
-                else Toast.makeText(context, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
-            }
+            .setPositiveButton("Añadir", null)   // listener lo configuramos más abajo
             .setNegativeButton("Cancelar", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            // Sobrescribimos el click del botón “Añadir”
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val text = edit.text.toString().trim()
+                if (text.isEmpty()) {
+                    Toast.makeText(context, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+                } else {
+                    // Llamamos al callback y cerramos
+                    onNewLabel(text)
+                    dialog.dismiss()
+                }
+            }
+        }
+        dialog.show()
     }
 }
